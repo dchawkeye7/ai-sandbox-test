@@ -208,3 +208,7 @@ __marimo__/
 
 # Security & Environment Variables
 .env
+
+# Ignore local project data and test files
+Minutes/
+*.pdf
