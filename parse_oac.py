@@ -33,5 +33,5 @@ def read_oac_agenda(file_path):
 
 if __name__ == "__main__":
     # Point the script to the PDF you just uploaded
-    target_file = "project_data/oac_agenda.pdf"
+    target_file = "13308.002-WPG-West_Parking_Garage-Lot_B_Yellow_Garage-57-AUS_West_Garage_OAC_4.07.2026-2026-04-17.pdf"
     read_oac_agenda(target_file)
