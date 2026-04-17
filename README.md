@@ -1,2 +1,2 @@
 # procore-sandbox-test
-Sandbox for playing around with Procore
+Sandbox for playing around with AI
