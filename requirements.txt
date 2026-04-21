@@ -1,0 +1,4 @@
+google-generativeai
+pdfplumber
+requests
+python-dotenv
