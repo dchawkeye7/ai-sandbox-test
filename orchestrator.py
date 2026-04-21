@@ -1,13 +1,17 @@
 import os
 import requests
 import pdfplumber
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
+from tenacity import retry, wait_random_exponential, stop_after_attempt
+from google.genai.errors import ServerError
 
 # 1. Load the vault
 load_dotenv()
 TODOIST_TOKEN = os.getenv("TODOIST_API_TOKEN")
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# The new SDK automatically looks for "GEMINI_API_KEY" in your .env file
+client = genai.Client()
 
 def extract_pdf_text(file_path):
     print(f"📄 Reading {file_path}...")
@@ -22,10 +26,15 @@ def extract_pdf_text(file_path):
                 text += page.extract_text() + "\n"
     return text
 
+# 1. Add this "decorator" right above your function
+# This tells Python: "If you get a 503 ServerError, wait exponentially (with jitter) up to 60 seconds, and try a maximum of 5 times."
+@retry(
+    wait=wait_random_exponential(multiplier=1, max=60),
+    stop=stop_after_attempt(5),
+    retry=lambda retry_state: isinstance(retry_state.outcome.exception(), ServerError)
+)
 def analyze_minutes(raw_text):
     print("🧠 AI is hunting for your action items...")
-    
-    model = genai.GenerativeModel('gemini-1.5-flash')
     
     # We give the AI stricter formatting rules so Python can easily read the output
     prompt = f"""
@@ -50,7 +59,10 @@ def analyze_minutes(raw_text):
     {raw_text}
     """
     
-    response = model.generate_content(prompt)
+    response = client.models.generate_content(
+        model='gemini-3-flash-preview',
+        contents=prompt
+    )
     
     # Split the AI's text block into a neat Python list of individual tasks
     task_list = [task.strip() for task in response.text.strip().split('\n') if task.strip()]
